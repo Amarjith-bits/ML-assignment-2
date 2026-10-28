@@ -119,6 +119,40 @@ def draw_confusion_matrix(y_true, y_pred, title: str):
     return fig
 
 
+def draw_class_balance(y_true):
+    counts = [int((y_true == 0).sum()), int((y_true == 1).sum())]
+    fig, ax = plt.subplots(figsize=(4.4, 2.8))
+    bars = ax.bar(CLASS_NAMES, counts, color=["#9ecae1", "#3182bd"])
+    ax.set_ylabel("Sessions")
+    ax.set_title("Class balance of this file", fontsize=10)
+    for bar, n in zip(bars, counts):
+        ax.text(bar.get_x() + bar.get_width() / 2, n, f"{n:,}\n({n / sum(counts):.1%})",
+                ha="center", va="bottom", fontsize=9)
+    ax.set_ylim(0, max(counts) * 1.25)
+    fig.tight_layout()
+    return fig
+
+
+def draw_model_comparison(table, metric_names=("Accuracy", "F1", "MCC")):
+    """Grouped bars: x = the five models, y = metric value (0 to 1)."""
+    models = list(table.index)
+    x = np.arange(len(models))
+    width = 0.8 / len(metric_names)
+    fig, ax = plt.subplots(figsize=(9, 4))
+    for k, metric in enumerate(metric_names):
+        ax.bar(x + (k - (len(metric_names) - 1) / 2) * width, table[metric],
+               width, label=metric)
+    ax.set_xticks(x, labels=models, rotation=15)
+    ax.set_ylabel("Score")
+    low = min(0.0, float(table[list(metric_names)].min().min()))  # MCC can be negative
+    ax.set_ylim(low, 1.0)
+    ax.axhline(0, color="grey", linewidth=0.6)
+    ax.set_title("Model comparison on the uploaded test data")
+    ax.legend(ncol=len(metric_names), loc="upper center", bbox_to_anchor=(0.5, -0.22))
+    fig.tight_layout()
+    return fig
+
+
 # --------------------------------------------------------------------- page
 st.set_page_config(page_title="Shopper Purchase Predictor", page_icon="🛒", layout="wide")
 
@@ -167,6 +201,8 @@ c1, c2, c3 = st.columns(3)
 c1.metric("Rows", f"{len(y_test):,}")
 c2.metric("Purchases", f"{n_buy:,}")
 c3.metric("Purchase rate", f"{n_buy / len(y_test):.1%}")
+with st.expander("Class balance of this file"):
+    st.pyplot(draw_class_balance(y_test))
 with st.expander(f"Preview of {source_label}"):
     st.dataframe(raw.head(20))
 
@@ -217,4 +253,4 @@ with tab_all:
         st.dataframe(table)
         best = table["MCC"].idxmax()
         st.success(f"Highest MCC on this file: **{best}** ({table.loc[best, 'MCC']:.4f})")
-        st.bar_chart(table[["Accuracy", "F1", "MCC"]])
+        st.pyplot(draw_model_comparison(table))
