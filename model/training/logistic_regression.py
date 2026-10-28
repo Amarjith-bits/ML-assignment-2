@@ -8,7 +8,7 @@ LABEL = "Logistic Regression"
 
 def run(split=None):
     split = split or load_and_split()
-    clf = LogisticRegression(max_iter=1000, random_state=RANDOM_STATE)
+    clf = LogisticRegression(max_iter=1000, random_state=RANDOM_STATE,class_weight="balanced")
     return fit_evaluate_save("logistic_regression.joblib", clf, split)
 
 

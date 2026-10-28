@@ -9,7 +9,7 @@ LABEL = "Support Vector Machine"
 def run(split=None):
     split = split or load_and_split()
     # probability=True is needed so predict_proba (and therefore AUC) works
-    clf = SVC(kernel="rbf", probability=True, random_state=RANDOM_STATE)
+    clf = SVC(kernel="rbf", probability=True, random_state=RANDOM_STATE,class_weight="balanced")
     return fit_evaluate_save("svm.joblib", clf, split)
 
 

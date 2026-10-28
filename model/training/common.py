@@ -102,13 +102,15 @@ def compute_metrics(y_true, y_pred, y_score) -> dict:
     }
 
 
-def fit_evaluate_save(filename, classifier, split):
+def fit_evaluate_save(filename, classifier, split, preprocessor=None):
     """Wrap `classifier` with the shared preprocessor, train it on the training
     split, score it on the held-out split, save the pipeline to model/ and
-    return the metrics dict."""
+    return the metrics dict. A model-specific `preprocessor` can be passed;
+    otherwise the shared one is used."""
     X_train, X_test, y_train, y_test = split
 
-    pipe = Pipeline(steps=[("prep", build_preprocessor()), ("clf", classifier)])
+    prep = preprocessor if preprocessor is not None else build_preprocessor()
+    pipe = Pipeline(steps=[("prep", prep), ("clf", classifier)])
     pipe.fit(X_train, y_train)
 
     pred = pipe.predict(X_test)
