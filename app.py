@@ -133,18 +133,37 @@ def draw_class_balance(y_true):
     return fig
 
 
-def draw_model_comparison(table, metric_names=("Accuracy", "F1", "MCC")):
+def draw_metric_bars(metrics: dict, model_name: str):
+    """Bar chart of the six metrics for one model (y fixed to 0-1)."""
+    names = list(metrics.keys())
+    values = [0.0 if np.isnan(v) else v for v in metrics.values()]
+    fig, ax = plt.subplots(figsize=(6.5, 3.4))
+    bars = ax.bar(names, values, color="#3182bd")
+    for bar, v in zip(bars, metrics.values()):
+        label = "n/a" if np.isnan(v) else f"{v:.3f}"
+        ax.text(bar.get_x() + bar.get_width() / 2, max(bar.get_height(), 0), label,
+                ha="center", va="bottom", fontsize=9)
+    low = min(0.0, min(values))  # MCC can be negative
+    ax.set_ylim(low, 1.1)
+    ax.axhline(0, color="grey", linewidth=0.6)
+    ax.set_ylabel("Score")
+    ax.set_title(f"{model_name}: all six metrics", fontsize=10)
+    fig.tight_layout()
+    return fig
+
+
+def draw_model_comparison(table, metric_names=("Accuracy", "AUC", "Precision", "Recall", "F1", "MCC")):
     """Grouped bars: x = the five models, y = metric value (0 to 1)."""
     models = list(table.index)
     x = np.arange(len(models))
     width = 0.8 / len(metric_names)
-    fig, ax = plt.subplots(figsize=(9, 4))
+    fig, ax = plt.subplots(figsize=(10, 4.2))
     for k, metric in enumerate(metric_names):
         ax.bar(x + (k - (len(metric_names) - 1) / 2) * width, table[metric],
                width, label=metric)
     ax.set_xticks(x, labels=models, rotation=15)
     ax.set_ylabel("Score")
-    low = min(0.0, float(table[list(metric_names)].min().min()))  # MCC can be negative
+    low = min(0.0, float(np.nanmin(table[list(metric_names)].values)))  # MCC can be negative
     ax.set_ylim(low, 1.0)
     ax.axhline(0, color="grey", linewidth=0.6)
     ax.set_title("Model comparison on the uploaded test data")
@@ -222,6 +241,8 @@ with tab_single:
         col.metric(name, "n/a" if np.isnan(value) else f"{value:.4f}")
     if np.isnan(metrics["AUC"]):
         st.caption("AUC needs both classes in the uploaded file, so it cannot be computed here.")
+
+    st.pyplot(draw_metric_bars(metrics, chosen_model))
 
     left, right = st.columns([1, 1.3])
     with left:
