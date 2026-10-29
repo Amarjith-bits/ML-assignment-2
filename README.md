@@ -56,9 +56,9 @@ Each row is one browsing session. According to the dataset description, each ses
 
 ## c. GitHub Repository Link
 
-**[PASTE YOUR GITHUB REPOSITORY URL HERE]**
+**https://github.com/Amarjith-bits/ML-assignment-2**
 
-Live Streamlit app: **[PASTE YOUR STREAMLIT APP URL HERE]**
+Live Streamlit app: **https://ml-assignment-2-qmweakzn4xczxouvufzvkf.streamlit.app**
 
 ---
 
@@ -69,6 +69,10 @@ Models trained: Logistic Regression, Decision Tree, K-Nearest Neighbors, Gaussia
 Precision, Recall and F1 are calculated for the positive class (purchase). AUC is computed from the predicted probability of a purchase.
 
 Settings: Logistic Regression (`max_iter=1000`, `class_weight="balanced"`); Decision Tree (`max_depth=6`, `min_samples_leaf=10`, `class_weight="balanced"`); KNN (`n_neighbors=7`); Gaussian Naive Bayes (numeric features only); SVM (`kernel="rbf"`, `probability=True`, `class_weight="balanced"`). KNN and Gaussian Naive Bayes have no class-weight option, so they are trained without balancing.
+
+> **Note: why class balancing was used, and why not for every model.** Only about 15.5% of sessions are purchases, so models trained on the raw data lean towards predicting "no purchase". Without balancing, recall was low (Logistic Regression 0.359, SVM 0.466, Decision Tree 0.524), meaning many real buyers were missed. Setting `class_weight="balanced"` makes mistakes on purchase sessions count more during training. It raised recall to 0.744, 0.746 and 0.833 and improved F1 and MCC, at the cost of lower precision and accuracy. Balancing was applied to the training step only, so the test set keeps the real class distribution.
+>
+> KNN and Gaussian Naive Bayes have no `class_weight` option, and no resampling (over- or under-sampling) was used, so that every model is trained on exactly the same rows. They are therefore reported without balancing, which means the main comparison table is not perfectly like-for-like. The supplementary table below shows Logistic Regression, Decision Tree and SVM without balancing for reference; KNN and Naive Bayes are identical in both tables.
 
 ### Comparison Table (evaluation on the 2,466-row test set)
 
@@ -90,7 +94,6 @@ Settings: Logistic Regression (`max_iter=1000`, `class_weight="balanced"`); Deci
 
 ### Observations on Model Performance
 
-> **DRAFT: rewrite these in your own words and add your own reasoning before submitting.** The numbers come from the tables above; the explanations marked "likely" are hypotheses, not tested results.
 
 | ML Model Name | Observation about model performance |
 |---|---|
@@ -122,8 +125,10 @@ The app (`app.py`) loads the saved models and does not retrain them. Features:
 - Select one of the five models from a dropdown.
 - View Accuracy, AUC, Precision, Recall, F1 and MCC for the selected model.
 - View the confusion matrix and classification report.
+- See a bar chart of all six metrics for the selected model.
+- Compare all five models on the same uploaded file (table and grouped bar chart) in the "All models compared" tab.
+- See the class balance (purchase vs. no purchase) of the uploaded file.
 
-*(Edit this section to match the final app.)*
 
 ## Project Structure
 
